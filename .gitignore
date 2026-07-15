@@ -1,0 +1,17 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+models/base/
+models/ata_classifier/
+models/severity_classifier/
+models/embedding_model/
+data/processed/embeddings.npy
+data/processed/report_ids.json
+data/processed/all_reports_for_embedding.csv
+data/raw/*.csv
+!data/raw/asrs_real_merged_v2.csv
+training_runs*/
+data/processed/reports.db
+reports/ata_classifier/confusion_matrix.png
+reports/severity_classifier/confusion_matrix.png
