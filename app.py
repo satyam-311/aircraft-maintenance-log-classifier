@@ -9,8 +9,21 @@ Only used if the Docker SDK isn't available for free on the account -- otherwise
 the Dockerfile path is simpler and preferred.
 """
 import gradio as gr
+import spaces
 
 from api.main import app as fastapi_app
+
+
+@spaces.GPU
+def _zerogpu_placeholder():
+    """
+    Required by Hugging Face's ZeroGPU Spaces: at least one @spaces.GPU-decorated
+    function must exist for the Space to start, even though this app runs entirely
+    on CPU (DistilBERT/MiniLM inference at our scale doesn't need a GPU at all).
+    This function is never called by any real request path -- it exists purely to
+    satisfy that platform startup check.
+    """
+    return "not used -- this app runs on CPU only"
 
 
 def status_check():
