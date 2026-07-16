@@ -1,16 +1,3 @@
----
-title: Maintenance Classifier Api
-emoji: 😻
-colorFrom: pink
-colorTo: yellow
-sdk: gradio
-sdk_version: 6.20.0
-python_version: '3.12'
-app_file: app.py
-pinned: false
-license: mit
----
-
 # Maintenance Log Classifier
 
 Classifies aviation maintenance narratives by ATA chapter and severity, and provides semantic search and grounded Q&A over the report corpus.
