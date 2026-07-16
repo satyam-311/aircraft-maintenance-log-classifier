@@ -8,8 +8,9 @@ object instead of raw uvicorn+Docker.
 Only used if the Docker SDK isn't available for free on the account -- otherwise
 the Dockerfile path is simpler and preferred.
 """
-import gradio as gr
 import spaces
+
+import gradio as gr
 
 from api.main import app as fastapi_app
 
