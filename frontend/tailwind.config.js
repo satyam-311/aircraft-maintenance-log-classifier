@@ -34,6 +34,12 @@ export default {
         'button': '8px',
         'input': '8px',
       },
+      screens: {
+        // Content grids (report cards, stat/metric cards) collapse to 1 column
+        // below this width per the frontend spec -- named so every grid stays
+        // in lockstep instead of scattering ad hoc breakpoint values.
+        'report-grid': '960px',
+      },
     },
   },
   plugins: [],

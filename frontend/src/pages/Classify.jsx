@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import ConfidenceBadge from '../components/ConfidenceBadge'
 import SeverityPill from '../components/SeverityPill'
+import Notice from '../components/Notice'
+import Button from '../components/Button'
 import { api } from '../lib/api'
 import { ATA_CHAPTERS, SEVERITY_LEVELS } from '../lib/constants'
 
@@ -57,29 +59,17 @@ export default function Classify() {
           onChange={(e) => setText(e.target.value)}
         />
         <div className="mt-16 flex justify-end">
-          <button
-            disabled={!canSubmit}
-            onClick={handleClassify}
-            className="bg-signal-blue text-white text-sm font-medium uppercase tracking-wide
-                       rounded-button px-20 py-12 disabled:opacity-40 disabled:cursor-not-allowed
-                       hover:bg-aviation-navy transition-colors"
-          >
+          <Button variant="primary" disabled={!canSubmit} onClick={handleClassify}>
             {loading ? 'Classifying…' : 'Classify'}
-          </button>
+          </Button>
         </div>
       </div>
 
-      {error && (
-        <div className="bg-surface-white border border-error rounded-card p-16 text-error text-sm">
-          {error}
-        </div>
-      )}
+      {error && <Notice variant="error">{error}</Notice>}
 
       {result && (
         <div className="bg-surface-white border border-border-light rounded-card p-16 flex flex-col gap-24">
-          {result.warnings?.length > 0 && (
-            <div className="text-severity-medium text-sm">{result.warnings.join(' ')}</div>
-          )}
+          {result.warnings?.length > 0 && <Notice variant="warning">{result.warnings.join(' ')}</Notice>}
 
           <div className="flex justify-between items-start">
             <div>
@@ -100,12 +90,9 @@ export default function Classify() {
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setCorrectionOpen('ata_chapter')}
-              className="text-signal-blue border border-signal-blue rounded-button px-16 py-8 text-xs font-medium uppercase"
-            >
+            <Button variant="secondary" onClick={() => setCorrectionOpen('ata_chapter')}>
               Correct
-            </button>
+            </Button>
           </div>
 
           <div className="flex justify-between items-start border-t border-border-light pt-16">
@@ -116,12 +103,9 @@ export default function Classify() {
                 <ConfidenceBadge confidence={result.severity_confidence} />
               </div>
             </div>
-            <button
-              onClick={() => setCorrectionOpen('severity')}
-              className="text-signal-blue border border-signal-blue rounded-button px-16 py-8 text-xs font-medium uppercase"
-            >
+            <Button variant="secondary" onClick={() => setCorrectionOpen('severity')}>
               Correct
-            </button>
+            </Button>
           </div>
 
         </div>
@@ -135,23 +119,16 @@ export default function Classify() {
             <div className="flex flex-col gap-8">
               {(correctionOpen === 'ata_chapter' ? Object.entries(ATA_CHAPTERS) : SEVERITY_LEVELS.map((s) => [s, s])).map(
                 ([value, label]) => (
-                  <button
-                    key={value}
-                    onClick={() => submitCorrection(correctionOpen, value)}
-                    className="text-left px-16 py-8 rounded-button border border-border-light hover:border-signal-blue text-sm"
-                  >
+                  <Button key={value} variant="option" onClick={() => submitCorrection(correctionOpen, value)}>
                     {label}
-                  </button>
+                  </Button>
                 )
               )}
             </div>
             <div className="mt-16 flex justify-end">
-              <button
-                onClick={() => setCorrectionOpen(null)}
-                className="text-text-slate text-sm font-medium px-16 py-8"
-              >
+              <Button variant="ghost" onClick={() => setCorrectionOpen(null)}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -159,6 +136,9 @@ export default function Classify() {
 
       {correctionStatus === 'saved' && (
         <div className="text-success text-sm">Correction saved — thank you.</div>
+      )}
+      {correctionStatus?.startsWith('error:') && (
+        <Notice variant="error">Couldn't save correction: {correctionStatus.replace(/^error:\s*/, '')}</Notice>
       )}
     </div>
   )

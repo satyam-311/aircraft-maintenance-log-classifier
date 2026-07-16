@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import ReportCard from '../components/ReportCard'
+import Notice from '../components/Notice'
+import Button from '../components/Button'
 import { api } from '../lib/api'
 
 export default function Ask() {
@@ -9,16 +11,20 @@ export default function Ask() {
   const [generationError, setGenerationError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [hasAsked, setHasAsked] = useState(false)
+  const [error, setError] = useState(null)
 
   async function handleAsk() {
     setLoading(true)
     setAnswer(null)
+    setError(null)
     try {
       const data = await api.ask(question)
       setAnswer(data.answer)
       setSources(data.sources)
       setGenerationError(data.generation_error)
       setHasAsked(true)
+    } catch (e) {
+      setError(e.message)
     } finally {
       setLoading(false)
     }
@@ -44,15 +50,12 @@ export default function Ask() {
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && canAsk && handleAsk()}
         />
-        <button
-          onClick={handleAsk}
-          disabled={!canAsk}
-          className="bg-signal-blue text-white text-sm font-medium uppercase tracking-wide
-                     rounded-button px-20 py-8 hover:bg-aviation-navy transition-colors disabled:opacity-40"
-        >
+        <Button variant="primary" size="sm" onClick={handleAsk} disabled={!canAsk}>
           {loading ? 'Asking…' : 'Ask'}
-        </button>
+        </Button>
       </div>
+
+      {error && <Notice variant="error">{error}</Notice>}
 
       {hasAsked && (
         <>
@@ -63,18 +66,14 @@ export default function Ask() {
             </div>
           )}
 
-          {generationError && (
-            <div className="text-severity-medium text-sm bg-surface-white border border-border-light rounded-card p-16">
-              {generationError}
-            </div>
-          )}
+          {generationError && <Notice variant="warning">{generationError}</Notice>}
 
           {sources.length > 0 && (
             <div>
               <h2 className="text-[20px] font-semibold text-text-charcoal mb-16">
                 Source Reports
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+              <div className="grid grid-cols-1 report-grid:grid-cols-2 gap-16">
                 {sources.map((s) => (
                   <ReportCard key={s.report_id} report={s} />
                 ))}

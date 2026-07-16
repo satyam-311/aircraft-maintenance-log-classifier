@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
 import { api } from '../lib/api'
 import { ATA_CHAPTERS, SEVERITY_COLORS } from '../lib/constants'
+import Notice from '../components/Notice'
+import LoadingState from '../components/LoadingState'
 
 function aggregateSeverityByMonth(rows) {
   const byMonth = {}
@@ -10,6 +12,16 @@ function aggregateSeverityByMonth(rows) {
     byMonth[r.month][r.severity] = (byMonth[r.month][r.severity] || 0) + r.count
   }
   return Object.values(byMonth).sort((a, b) => a.month.localeCompare(b.month))
+}
+
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Display-only formatting -- "month" stays YYYYMM in the underlying data
+// (matches ASRS's de-identified date precision), this just formats the tick label.
+function formatMonthTick(yyyymm) {
+  const year = yyyymm.slice(0, 4)
+  const monthIdx = parseInt(yyyymm.slice(4, 6), 10) - 1
+  return `${MONTH_ABBR[monthIdx] || '?'} ${year}`
 }
 
 export default function Dashboard() {
@@ -21,13 +33,11 @@ export default function Dashboard() {
   }, [])
 
   if (error) {
-    return (
-      <div className="text-error text-sm">Couldn't load dashboard stats: {error}</div>
-    )
+    return <Notice variant="error">Couldn't load dashboard stats: {error}</Notice>
   }
 
   if (!stats) {
-    return <div className="text-text-slate text-sm">Loading dashboard…</div>
+    return <LoadingState label="Loading dashboard…" />
   }
 
   const systemData = stats.system_breakdown.map((s) => ({
@@ -45,7 +55,7 @@ export default function Dashboard() {
         <p className="text-text-slate text-sm">Corpus overview — maintenance narrative classification</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-16">
+      <div className="grid grid-cols-1 report-grid:grid-cols-2 gap-16">
         <div className="bg-surface-white border border-border-light rounded-card p-16">
           <div className="text-xs font-medium text-text-slate mb-8">Total Reports</div>
           <div className="text-[28px] font-bold text-aviation-navy">{stats.total_reports.toLocaleString()}</div>
@@ -59,11 +69,11 @@ export default function Dashboard() {
       <div className="bg-surface-white border border-border-light rounded-card p-16">
         <h2 className="text-[20px] font-semibold text-text-charcoal mb-16">Breakdown by System</h2>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={systemData} layout="vertical" margin={{ left: 40 }}>
+          <BarChart data={systemData} layout="vertical" margin={{ left: 20 }}>
             <XAxis type="number" stroke="#6B7280" fontSize={12} />
-            <YAxis type="category" dataKey="code" width={50} stroke="#6B7280" fontSize={12} />
+            <YAxis type="category" dataKey="name" width={220} stroke="#6B7280" fontSize={12} />
             <Tooltip
-              formatter={(value, name, props) => [value, props.payload.name]}
+              formatter={(value, name, props) => [value, `${props.payload.name} (ATA ${props.payload.code})`]}
               contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #D9DEE3' }}
             />
             <Bar dataKey="count" fill="#2E6E9E" radius={[0, 4, 4, 0]} />
@@ -75,7 +85,7 @@ export default function Dashboard() {
         <h2 className="text-[20px] font-semibold text-text-charcoal mb-16">Severity Distribution Over Time</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={severityTimeData}>
-            <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
+            <XAxis dataKey="month" tickFormatter={formatMonthTick} stroke="#6B7280" fontSize={12} />
             <YAxis stroke="#6B7280" fontSize={12} />
             <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #D9DEE3' }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />

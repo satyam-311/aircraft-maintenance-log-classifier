@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, API_BASE } from '../lib/api'
+import Notice from '../components/Notice'
+import LoadingState from '../components/LoadingState'
 
 function MetricCard({ label, value, target, meetsTarget }) {
   return (
@@ -29,7 +31,7 @@ function ClassifierSection({ title, metrics, confusionMatrixUrl, targetLabel, ta
     <div className="flex flex-col gap-16">
       <h2 className="text-[20px] font-semibold text-text-charcoal">{title}</h2>
 
-      <div className="grid grid-cols-3 gap-16">
+      <div className="grid grid-cols-1 report-grid:grid-cols-3 gap-16">
         <MetricCard label={targetLabel} value={actual} target={targetValue} meetsTarget={meetsTarget} />
         <MetricCard label="Macro Precision" value={metrics.test_macro_precision.toFixed(3)} target="—" meetsTarget />
         <MetricCard label="Macro Recall" value={metrics.test_macro_recall.toFixed(3)} target="—" meetsTarget />
@@ -54,12 +56,14 @@ function ClassifierSection({ title, metrics, confusionMatrixUrl, targetLabel, ta
 
 export default function ModelPerformance() {
   const [data, setData] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    api.modelPerformance().then(setData)
+    api.modelPerformance().then(setData).catch((e) => setError(e.message))
   }, [])
 
-  if (!data) return <div className="text-text-slate text-sm">Loading model performance…</div>
+  if (error) return <Notice variant="error">Couldn't load model performance: {error}</Notice>
+  if (!data) return <LoadingState label="Loading model performance…" />
 
   return (
     <div className="flex flex-col gap-32">

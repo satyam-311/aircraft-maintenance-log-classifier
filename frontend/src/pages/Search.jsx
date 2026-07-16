@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import FilterBar from '../components/FilterBar'
 import ReportCard from '../components/ReportCard'
+import Notice from '../components/Notice'
+import Button from '../components/Button'
 import { api } from '../lib/api'
 
 export default function Search() {
@@ -12,15 +14,19 @@ export default function Search() {
   const [degradedMessage, setDegradedMessage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [error, setError] = useState(null)
 
   async function runSearch() {
     setLoading(true)
+    setError(null)
     try {
       const data = await api.search({ q: query, system, severity })
       setResults(data.results)
       setDegraded(data.degraded)
       setDegradedMessage(data.degraded_message)
       setHasSearched(true)
+    } catch (e) {
+      setError(e.message)
     } finally {
       setLoading(false)
     }
@@ -43,29 +49,22 @@ export default function Search() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && runSearch()}
           />
-          <button
-            onClick={runSearch}
-            disabled={loading}
-            className="bg-signal-blue text-white text-sm font-medium uppercase tracking-wide
-                       rounded-button px-20 py-8 hover:bg-aviation-navy transition-colors disabled:opacity-40"
-          >
+          <Button variant="primary" size="sm" onClick={runSearch} disabled={loading}>
             {loading ? 'Searching…' : 'Search'}
-          </button>
+          </Button>
         </div>
         <FilterBar system={system} severity={severity} onSystemChange={setSystem} onSeverityChange={setSeverity} />
       </div>
 
-      {degraded && degradedMessage && (
-        <div className="text-severity-medium text-sm bg-surface-white border border-border-light rounded-card p-16">
-          {degradedMessage}
-        </div>
-      )}
+      {error && <Notice variant="error">{error}</Notice>}
+
+      {degraded && degradedMessage && <Notice variant="warning">{degradedMessage}</Notice>}
 
       {hasSearched && results.length === 0 && (
         <p className="text-text-slate text-sm">No matching reports found.</p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+      <div className="grid grid-cols-1 report-grid:grid-cols-2 gap-16">
         {results.map((r) => (
           <ReportCard key={r.report_id} report={r} />
         ))}

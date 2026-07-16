@@ -15,3 +15,9 @@ training_runs*/
 data/processed/reports.db
 reports/ata_classifier/confusion_matrix.png
 reports/severity_classifier/confusion_matrix.png
+
+# Local dev-server scratch output (pid files, redirected stdout/stderr logs)
+*_pid.txt
+*_stdout.log
+*_stderr.log
+search_resp.json
